@@ -1,13 +1,60 @@
-﻿cmake_minimum_required(VERSION 3.4)
+﻿cmake_minimum_required(VERSION 3.11)
+project(HW06 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(formatter_project)
+include(InstallRequiredSystemLibraries)
+
+set(CPACK_PACKAGE_VERSION_MAJOR "1")
+set(CPACK_PACKAGE_VERSION_MINOR "0")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
+set(CPACK_PACKAGE_NAME "HW06")
+set(CPACK_PACKAGE_DESCRIPTION "A simple solver for quadratic equations")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Solves quadratic equations")
+set(CPACK_PACKAGE_CONTACT "email")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "contacts")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+
+set(CPACK_GENERATOR "TGZ;ZIP")
+if(UNIX AND NOT APPLE)
+    set(CPACK_GENERATOR "${CPACK_GENERATOR};DEB;RPM")
+elseif(APPLE)
+    set(CPACK_GENERATOR "${CPACK_GENERATOR};DragNDrop")
+elseif(WIN32)
+	set(CPACK_GENERATOR "WIX")
+endif()
+
+set(CPACK_RPM_PACKAGE_RELEASE "1")
+set(CPACK_RPM_PACKAGE_LICENSE "MIT")
+set(CPACK_RPM_PACKAGE_GROUP "Development/Tools")
+
+set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.27)")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Ваше имя <ваш.email@example.com>")
+
+if(WIN32)
+    set(CPACK_GENERATOR "WIX")
+
+    set(CPACK_WIX_PRODUCT_GUID "CDF8CD0C-12F9-4599-87D7-ACD9FAB2B27C")
+    set(CPACK_WIX_UPGRADE_GUID "1DBA5A02-215D-4839-B443-9A37B4C041FF")
+
+    set(CPACK_PACKAGE_NAME "HW06")
+    set(CPACK_PACKAGE_VERSION "1.0.0")
+
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.rtf")
+endif()
+
+if(APPLE)
+    set(CPACK_DMG_VOLUME_NAME "HW06 Solver")
+    set(CPACK_DMG_FORMAT "UDBZ")
+    set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_SOURCE_DIR}/background.png")
+endif()
+
+include(CPack)
 
 add_subdirectory(formatter_lib)
 add_subdirectory(formatter_ex_lib)
 add_subdirectory(solver_lib)
-
-add_subdirectory(hello_world_application)
 add_subdirectory(solver_application)
