@@ -2,9 +2,9 @@ name: Docker Build and Run
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-and-run:
@@ -18,6 +18,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
       with:
@@ -26,30 +29,33 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build and push Docker image
+      env:
+        IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/hw08-app
       run: |
-        # Формируем корректное имя образа в нижнем регистре
-        IMAGE_NAME=ghcr.io/${{ github.repository_owner | lower }}/hw08-app:latest
-        
         docker build -t $IMAGE_NAME .
         docker push $IMAGE_NAME
 
-    - name: Run container and get logs
+    - name: Run container and save logs
       run: |
         mkdir -p logs
-        IMAGE_NAME=ghcr.io/${{ github.repository_owner | lower }}/hw08-app:latest
-        
         docker run \
-          --mount type=bind,source=$(pwd)/logs,target=/output \
-          $IMAGE_NAME
+          --name hw08-container \
+          -v $(pwd)/logs:/output \
+          ghcr.io/${{ github.repository_owner }}/hw08-app || true
         
-        if [ ! -f logs/log.txt ]; then
-          echo "Log file not found!"
+        # Проверяем наличие логов
+        if [ -f logs/log.txt ]; then
+          echo "Logs saved successfully"
+          cat logs/log.txt
+        else
+          echo "Error: No log file found!"
+          docker logs hw08-container > logs/container_logs.txt 2>&1
           exit 1
         fi
 
-    - name: Upload logs artifact
+    - name: Upload logs
       uses: actions/upload-artifact@v4
       with:
-        name: build-logs
+        name: app-logs
         path: logs/log.txt
-        retention-days: 5
+        if-no-files-found: error
