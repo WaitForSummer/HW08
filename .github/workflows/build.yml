@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+      
+permissions:
+  contents: write
+
+jobs:
+  linux-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Проверка кода
+        uses: actions/checkout@v3
+
+      - name: Установка зависимостей
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm dpkg cmake build-essential
+          dpkg --version
+
+      - name: Конфигурация CMake
+        run: cmake -S . -B build -DCPACK_GENERATOR="DEB;RPM"
+
+      - name: Сборка
+        run: cmake --build build
+
+      - name: "Упаковка"
+        run: |
+          cd build
+          cpack -G DEB
+          cpack -G RPM
+
+      - name: Загружаем ресурсы на GH Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            build/*.deb
+            build/*.rpm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  windows-build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Проверка кода
+        uses: actions/checkout@v3
+
+      - name: Установка зависимостей
+        run: |
+          choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+          choco install nsis
+
+      - name: Создание каталога build
+        run: mkdir build
+
+      - name: Конфигурация CMake
+        run: cmake -S . -B build -DCPACK_GENERATOR="NSIS"
+
+      - name: Сборка
+        run: cmake --build build
+
+      - name: Создание MSI
+        run: cd build && dir
+
+      - name: Перечисление содержимого каталога
+        run: |
+          cd build
+          cpack -G WIX
+
+      - name: Загружаем ресурсы на GH Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/*.msi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  macos-build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Проверка кода
+        uses: actions/checkout@v3
+
+      - name: Установка зависимостей
+        run: |
+          brew install cmake
+
+      - name: Создание каталога build
+        run: mkdir build
+
+      - name: Конфигурация CMake
+        run: cmake -S . -B build -DCPACK_GENERATOR="DragNDrop"
+
+      - name: Сборка
+        run: cmake --build build
+
+      - name: Создание DMG
+        run: cd build && cpack -G DragNDrop
+
+      - name: Вывод содержимого build
+        run: ls -R build
+
+      - name: Загрузка DMG на GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/*.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
