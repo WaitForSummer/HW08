@@ -34,6 +34,9 @@ set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.27)")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Ваше имя <ваш.email@example.com>")
 
+
+
+
 if(WIN32)
     set(CPACK_GENERATOR "WIX")
 
