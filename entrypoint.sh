@@ -1,5 +1,5 @@
 #!/bin/bash
-
+echo "Starting the application..." > /output/log.txt
 git clone https://github.com/WaitForSummer/HW08.git /app/src
 
 mkdir -p /app/src/build
