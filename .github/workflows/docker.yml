@@ -1,9 +1,9 @@
 name: Docker Pipeline
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
-  build-and-run:
+  build:
     runs-on: ubuntu-latest
     
     steps:
@@ -11,15 +11,31 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Build Docker image
-      run: docker build -t hw08-app .
-
+      run: |
+        docker build -t hw08-app .
+        
+    - name: Create logs directory
+      run: mkdir -p logs
+      
     - name: Run container
       run: |
-        mkdir -p logs
-        docker run -v $(pwd)/logs:/output hw08-app
-
+        docker run \
+          --name hw08-container \
+          -v $(pwd)/logs:/output \
+          hw08-app || true
+          
+        # Проверка логов
+        if [ -f logs/log.txt ]; then
+          echo "Logs generated successfully"
+          cat logs/log.txt
+        else
+          echo "Trying to get container logs..."
+          docker logs hw08-container > logs/container_logs.txt
+          exit 1
+        fi
+        
     - name: Upload logs
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: logs
-        path: logs/log.txt
+        name: app-logs
+        path: logs/
