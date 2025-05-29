@@ -26,6 +26,7 @@ elseif(WIN32)
 	set(CPACK_GENERATOR "WIX")
 endif()
 
+
 set(CPACK_RPM_PACKAGE_RELEASE "1")
 set(CPACK_RPM_PACKAGE_LICENSE "MIT")
 set(CPACK_RPM_PACKAGE_GROUP "Development/Tools")
