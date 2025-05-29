@@ -1,4 +1,4 @@
-name: Docker Build and Run
+name: Docker сборка и запуск
 
 on:
   push:
@@ -9,14 +9,33 @@ on:
 jobs:
   build-and-run:
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      packages: write
+      actions: write
+      
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - name: Проверка кода
+      uses: actions/checkout@v4  # Обновленная версия
 
-    - name: Build Docker image
-      run: docker build -t hw08-app .
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Run container and get logs
+    - name: Сборка образа Docker
+      run: |
+        docker build -t hw08-app .
+        docker tag hw08-app ghcr.io/${{ github.repository_owner }}/hw08-app:latest
+
+    - name: Пуш образа Docker
+      run: |
+        docker push ghcr.io/${{ github.repository_owner }}/hw08-app:latest
+
+    - name: Запуск контейнера и получение логов
       run: |
         mkdir -p logs
         docker run \
@@ -29,8 +48,9 @@ jobs:
           exit 1
         fi
 
-    - name: Upload logs artifact
-      uses: actions/upload-artifact@v3
+    - name: Загрузка logs artifact
+      uses: actions/upload-artifact@v4  # Обновленная версия
       with:
         name: build-logs
         path: logs/log.txt
+        retention-days: 5
