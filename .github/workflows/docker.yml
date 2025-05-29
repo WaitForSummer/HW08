@@ -1,0 +1,36 @@
+name: Docker Build and Run
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Build Docker image
+      run: docker build -t hw08-app .
+
+    - name: Run container and get logs
+      run: |
+        mkdir -p logs
+        docker run \
+          --mount type=bind,source=$(pwd)/logs,target=/output \
+          hw08-app
+        
+        # Проверка наличия логов
+        if [ ! -f logs/log.txt ]; then
+          echo "Log file not found!"
+          exit 1
+        fi
+
+    - name: Upload logs artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-logs
+        path: logs/log.txt

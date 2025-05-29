@@ -1,32 +1,17 @@
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 
-# Установка зависимостей
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    gcc g++ \
-    wget \
-    make \
+    apt-get install -y \
+    build-essential \
+    cmake \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Установка CMake 3.11+
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends software-properties-common && \
-    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main' && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends cmake
+WORKDIR /app
 
-# Копирование исходников
-COPY . print/
-WORKDIR print
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-# Сборка проекта
-RUN cmake -H. -B_build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=_install && \
-    cmake --build _build && \
-    cmake --build _build --target install
+VOLUME /output
 
-# Настройка окружения
-ENV LOG_PATH=/home/logs/log.txt
-VOLUME /home/logs
-WORKDIR _install/bin
-ENTRYPOINT ["./demo"]
+ENTRYPOINT ["/entrypoint.sh"]
