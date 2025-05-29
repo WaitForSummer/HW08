@@ -1,0 +1,12 @@
+build/
+_build/
+bin/
+
+*.a
+*.o
+*.so
+*.exe
+
+.DS_Store
+.idea/
+.vscode/
