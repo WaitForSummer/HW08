@@ -29,21 +29,23 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build and push Docker image
-      env:
-        IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/hw08-app
       run: |
+        # Приводим имя репозитория к нижнему регистру
+        IMAGE_NAME=ghcr.io/${{ github.repository_owner | lower }}/hw08-app:latest
+        echo "Building image: $IMAGE_NAME"
         docker build -t $IMAGE_NAME .
         docker push $IMAGE_NAME
 
     - name: Run container and save logs
       run: |
         mkdir -p logs
+        IMAGE_NAME=ghcr.io/${{ github.repository_owner | lower }}/hw08-app:latest
+        echo "Running container from: $IMAGE_NAME"
         docker run \
           --name hw08-container \
           -v $(pwd)/logs:/output \
-          ghcr.io/${{ github.repository_owner }}/hw08-app || true
+          $IMAGE_NAME || true
         
-        # Проверяем наличие логов
         if [ -f logs/log.txt ]; then
           echo "Logs saved successfully"
           cat logs/log.txt
