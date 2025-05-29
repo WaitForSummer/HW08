@@ -1,4 +1,4 @@
-name: Docker сборка и запуск
+name: Docker Build and Run
 
 on:
   push:
@@ -13,11 +13,10 @@ jobs:
     permissions:
       contents: read
       packages: write
-      actions: write
       
     steps:
-    - name: Проверка кода
-      uses: actions/checkout@v4  # Обновленная версия
+    - name: Checkout code
+      uses: actions/checkout@v4
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
@@ -26,30 +25,30 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Сборка образа Docker
+    - name: Build and push Docker image
       run: |
-        docker build -t hw08-app .
-        docker tag hw08-app ghcr.io/${{ github.repository_owner }}/hw08-app:latest
+        # Формируем корректное имя образа в нижнем регистре
+        IMAGE_NAME=ghcr.io/${{ github.repository_owner | lower }}/hw08-app:latest
+        
+        docker build -t $IMAGE_NAME .
+        docker push $IMAGE_NAME
 
-    - name: Пуш образа Docker
-      run: |
-        docker push ghcr.io/${{ github.repository_owner }}/hw08-app:latest
-
-    - name: Запуск контейнера и получение логов
+    - name: Run container and get logs
       run: |
         mkdir -p logs
+        IMAGE_NAME=ghcr.io/${{ github.repository_owner | lower }}/hw08-app:latest
+        
         docker run \
           --mount type=bind,source=$(pwd)/logs,target=/output \
-          hw08-app
+          $IMAGE_NAME
         
-        # Проверка наличия логов
         if [ ! -f logs/log.txt ]; then
           echo "Log file not found!"
           exit 1
         fi
 
-    - name: Загрузка logs artifact
-      uses: actions/upload-artifact@v4  # Обновленная версия
+    - name: Upload logs artifact
+      uses: actions/upload-artifact@v4
       with:
         name: build-logs
         path: logs/log.txt
