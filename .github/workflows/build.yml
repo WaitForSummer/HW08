@@ -64,10 +64,10 @@ jobs:
       - name: Сборка
         run: cmake --build build
 
-      - name: Создание MSI
+      - name: Содержимое build
         run: cd build && dir
 
-      - name: Перечисление содержимого каталога
+      - name: Создание WIX
         run: |
           cd build
           cpack -G WIX
