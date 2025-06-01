@@ -7,4 +7,4 @@ cd /app/src/build
 cmake ..
 make
 
-./solver > /output/log.txt 2>&1
+echo "1 2 3" | ./solver_application/solver >> /output/log.txt 2>&1
